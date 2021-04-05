@@ -8,17 +8,24 @@ namespace PdfViewer
 {
     public class CvDto
     {
+        private static int lastId = 0;
+
         public int Id { get; set; }
         public string FileName { get; set; }
         public string FilePath { get; set; }
         public Status Status { get; set; }
 
-        public CvDto(int id, string fileName, string filePath, Status status)
+        public CvDto(string fileName, string filePath, Status status)
         {
-            Id = id;
+            Id = ++lastId;
             FileName = fileName;
             FilePath = filePath;
             Status = status;
+        }
+
+        ~CvDto()
+        {
+            lastId -= 1;
         }
     }
 }

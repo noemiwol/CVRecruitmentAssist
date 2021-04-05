@@ -9,22 +9,45 @@ namespace PdfViewer
 {
     internal class CvRepository
     {
+
+
         public List<CvDto> GetCvDtos(string directoryPath)
         {
-            int id = 0;
             List<CvDto> results = new List<CvDto>();
             string[] extensions = { ".pdf" };
-
             foreach (string filePath in Directory.EnumerateFiles(directoryPath, "*.*", SearchOption.AllDirectories)
                 .Where(s => extensions.Any(ext => ext == Path.GetExtension(s))))
             {
-                id++;
                 string name = Path.GetFileNameWithoutExtension(filePath);
-                var cv = CreateCvDto(id, name, filePath, GetStatus(name));
+                var cv = CreateCvDto(name, filePath, GetStatus(name));
                 results.Add(cv);
             }
             return results;
         }
+
+        public void UpdateStatus(CvDto cvDto, Status newStatus)
+        {
+            if (cvDto.Status.Equals(newStatus))
+            {
+                return;
+            }
+
+            var lengthOfSubString = cvDto.Status.Equals(Status.Nowe)
+                ? cvDto.FileName.Length
+                : cvDto.FileName.IndexOf(cvDto.Status.ToString()) - 1;
+
+            var nameWithoutStatus
+                = cvDto.FileName.Substring(
+                    0,
+                    lengthOfSubString);
+
+            var newName = $"{nameWithoutStatus}{newStatus}";
+            var fileDirectory = Path.GetDirectoryName(cvDto.FilePath);
+            var newFilePath = Path.Combine(fileDirectory, newName);
+
+            File.Move(cvDto.FilePath, newFilePath);
+        }
+
         private Status GetStatus(string name)
         {
             switch (true)
@@ -41,10 +64,13 @@ namespace PdfViewer
                     return Status.Nowe;
             }
         }
-        private CvDto CreateCvDto(int id, string name, string filePath, Status status)
+        private CvDto CreateCvDto(string name, string filePath, Status status)
         {
-            return new CvDto(id, name, filePath, status);
+            return new CvDto(name, filePath, status);
         }
+
+
+
 
     }
 
